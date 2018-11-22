@@ -28,66 +28,48 @@ Adafruit_STMPE610 ts = Adafruit_STMPE610(STMPE_CS);
 //Adafruit_LIS3DH lis = Adafruit_LIS3DH(LIS3DH_CS);
 // I2C
 // Adafruit_LIS3DH lis = Adafruit_LIS3DH();
-Adafruit_LIS3DH lis  = Adafruit_LIS3DH(LIS3DH_CS, LIS3DH_MOSI, LIS3DH_MISO, LIS3DH_CLK);
-
-
-// Touch screen range
-#define TS_MINX 150
-#define TS_MINY 130
-#define TS_MAXX 3800
-#define TS_MAXY 4000
+// Adafruit_LIS3DH lis  = Adafruit_LIS3DH(LIS3DH_CS, LIS3DH_MOSI, LIS3DH_MISO, LIS3DH_CLK);
 
 
 
-
-
-void setup() {
-  int16_t x, y;
-
-  Serial.begin(9600);
-  Serial.println("LIS3DH test!");
-
-
-  tft.begin();
-  ts.begin();
-
-  tft.fillScreen(COL444(0x6Fc));
-
-  if (! lis.begin(0x18)) {   // change this to 0x19 for alternative i2c address
-    Serial.println("Couldnt start");
-    while (1);
-  }
-  Serial.println("LIS3DH found!");
-  
-  lis.setRange(LIS3DH_RANGE_4_G);   // 2, 4, 8 or 16 G!
-  
-  Serial.print("Range = "); Serial.print(2 << lis.getRange());  
-  Serial.println("G");
+static inline
+void getPoint(uint16_t &x, uint16_t &y, uint8_t &z) {
+  ts.readData(&x,&y,&z);
+  x = map(x, 180, 3800, 0, 245);
+  y = map(y, 180, 3800, 0, 325);
 }
 
 
 
+void setup() {
+  tft.begin();
+  ts.begin();
+  tft.fillScreen(COL444(0x000));
+  tft.setTextColor(COL444(0xFFF));
+  tft.setTextSize(3);
+}
+
 void loop(void) {
+  int done = 0;
+  uint16_t x,y;
+  uint8_t z;
 
-  lis.read();      // get X Y and Z data at once
-  // Then print out the raw data
-  Serial.print("X:  "); Serial.print(lis.x); 
-  Serial.print("  \tY:  "); Serial.print(lis.y); 
-  Serial.print("  \tZ:  "); Serial.print(lis.z); 
+  while (ts.touched()) {
+    getPoint(x,y,z);
 
-  /* Or....get a new sensor event, normalized */ 
-  sensors_event_t event; 
-  lis.getEvent(&event);
-  
-  /* Display the results (acceleration is measured in m/s^2) */
-  Serial.print("\t\tX: "); Serial.print(event.acceleration.x);
-  Serial.print(" \tY: "); Serial.print(event.acceleration.y); 
-  Serial.print(" \tZ: "); Serial.print(event.acceleration.z); 
-  Serial.println(" m/s^2 ");
+    if (!done) {
+      tft.fillScreen(COL444(0x000));
+      tft.setCursor(0,0);
+      tft.print(x); tft.print(", "); tft.println(y);
+      tft.drawCircle(x,y,5,COL444(0x0FF));
+      done = 1;
+    }
+  }
+  while(!ts.bufferEmpty()) getPoint(x,y,z);
 
-  Serial.println();
+  tft.fillScreen(COL444(0xF00));
 
-  delay(200); 
+ delay(200);
 }
 
 
