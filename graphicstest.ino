@@ -33,197 +33,225 @@ Adafruit_STMPE610 ts = Adafruit_STMPE610(STMPE_CS);
 // Adafruit_LIS3DH lis = Adafruit_LIS3DH();
 // Adafruit_LIS3DH lis  = Adafruit_LIS3DH(LIS3DH_CS, LIS3DH_MOSI, LIS3DH_MISO, LIS3DH_CLK);
 
+#define SCREEN_BG COL(0x000)
+#define SCREEN_FG COL(0xFF0)
+#define BTN_BG    COL(0x330)
+#define BTN_FG    COL(0xFF0)
+#define BTN_ON_BG COL(0x990)
+#define BTN_ON_FG COL(0xFF0)
 
-uint16_t x, y;
+// Size of time
+#define BIG   true
+#define SMALL false
 
+// How to draw buttons
+#define FILLED   true
+#define UNFILLED false
+
+#define NO_BTN 4
+
+
+// State -----------------------
+
+// Player colors
+uint16_t  msgFG[] = { 0, 0, 0, 0 };
+uint16_t  msgBG[] = { COL(0xFFF), COL(0x0FF)
+                    , COL(0xF00), COL(0x0F0) };
+
+
+// Player times
+unsigned long ptime[] = { 0,0,0,0 };
+
+// Last time we checked the time, or 0 if paused.
+unsigned long start_millis = 0;
+
+uint8_t btn_down = NO_BTN; // 0-3, that button was pressed
+
+
+
+// Get the location where we touched.
 static inline
-void rot(uint16_t maxX, uint16_t maxY, uint16_t &x, uint16_t &y) {
-  uint16_t t;
-  switch (tft.getRotation()) {
-    case 1: t = x; x = y; y = maxX - t; break;
-    case 2: x = maxX - x; y = maxY - y; break;
-    case 3: t = x; x = maxY - y; y = t;
-  }
-}
-
-static inline
-void unrot(uint16_t maxX, uint16_t maxY, uint16_t &x, uint16_t &y) {
-  uint16_t t;
-  switch (tft.getRotation()) {
-    case 1: t = y; y = x; x = maxX - t; break;
-    case 2: x = maxX - x; y = maxY - y; break;
-    case 3: t = y; y = maxY - x; x = t;
-  }
-}
-
-static inline
-void getPixelPoint(void) {
+void getPixelPoint(uint16_t &x, uint16_t &y) {
   uint8_t z;
   ts.readData(&x,&y,&z);
   x = map(x, 150, 3800, 0, 245);
   y = map(y, 180, 3800, 0, 325);
-  rot(245,345,x,y);
+}
+
+// Draw a button
+static inline
+void drawButton(int x, bool on) {
+  uint8_t r = tft.getRotation();
+  tft.setRotation(0);
+  if (on) {
+    tft.fillRoundRect(80 * x, 245, 70, 70, 5, BTN_ON_BG);
+  } else {
+    tft.fillRoundRect(80 * x, 245, 70, 70, 5, BTN_BG);
+  }
+  tft.setRotation(r);
+}
+
+// Compute offsets to skip over the button bar,
+// depending on screen orientation.
+static inline
+void screenOffset (uint8_t r, uint16_t &x, uint16_t &y) {
+  x = (r == 3) ? 80 : 0;
+  y = (r == 2) ? 80 : 0;
 }
 
 
 
 
-
-static const int w = 80;
-
-static inline
-void drawSquare(int x, int y, uint16_t c) {
-  tft.drawRect(1 + w*x, 1 + w*y, w-2, w-2, c);
-}
-
-
-static inline
-void drawSquareFilled(int x, int y, uint16_t c) {
-  tft.fillRect(1 + w*x, 1 + w*y, w-2, w-2, c);
-}
-
-
-
-char msg[9];
-
-uint16_t  msgFG[] = { 0, 0, 0, 0 };
-uint16_t  msgBG[] = { COL(0xFFF), COL(0xF00)
-                    , COL(0x00F), COL(0xFF0) };
-
-
-
-static inline
-void clearMsg(void) {
-  int16_t x,y;
-  uint16_t w,h;
-  int r = tft.getRotation();
-  tft.getTextBounds(msg + 3, (r == 3) ? 125 : 45
-                           , (r == 2) ? 180 : 100
-                           , &x, &y, &w, &h);
-  tft.fillRect(x,y,w,h,COL(0x000));
-  msg[0] = 0;
-}
-
-
-static inline
-void sayTime(Time t) {
-  clearMsg();
-  int r = tft.getRotation();
-  tft.setCursor((r == 3) ? 125: 45, (r == 2) ? 180 : 100);
+static
+void sayTime(bool big) {
+  uint16_t xx, yy;
+  uint8_t r = tft.getRotation();
+  char msg[9];
+  screenOffset(r,xx,yy);
+  if (big) {
+    tft.setTextSize(5);
+    tft.setCursor(xx + 45, yy + 100);
+  } else {
+    tft.setTextSize(3);
+    tft.setCursor(xx + 80, yy + 10);
+  }
   tft.setTextColor(msgFG[r], msgBG[r]);
-  t.render(msg);
+  Time(ptime[r]).render(msg);
   tft.print(msg + 3);
 }
 
-static inline
-void drawBg(void) {
-  uint16_t w = 160, h = 40;
-  int i = tft.getRotation();
-  uint16_t xx = 0, yy = 0;
-  if (i == 1 || i == 3) { uint16_t t = w; w = h; h = t; }
-  if (i == 2) { yy = 80; }
-  if (i == 3) { xx = 80; }
-  static uint16_t xs[] = { 40,200,40,0 };
-  static uint16_t ys[] = { 0, 40, 200, 40 };
-
-  tft.fillRect(xx,yy,240,240,COL(0x000));
-  tft.fillRect(xx + 40, yy + 40, 160, 100, msgBG[i]);
-
-  i = (4 - i) % 4;
-  tft.fillRect(xx + xs[i], yy + ys[i], w, h, msgBG[0]);
-  i = (i + 1) % 4;
-  tft.fillRect(xx + xs[i], yy + ys[i], h, w, msgBG[1]);
-  i = (i + 1) % 4;
-  tft.fillRect(xx + xs[i], yy + ys[i], w, h, msgBG[2]);
-  i = (i + 1) % 4;
-  tft.fillRect(xx + xs[i], yy + ys[i], h, w, msgBG[3]);
-}
-
-Time time;
-
-void setup() {
-  tft.begin();
-  ts.begin();
-  tft.fillScreen(COL(0x000));
-  tft.setTextColor(COL(0x0F0),COL(0x060));
-  tft.setTextSize(5);
-  time = Time(millis());
-  drawSquare(0,3, COL(0xF00));
-  drawSquare(1,3, COL(0x0F0));
-  drawSquare(2,3, COL(0x00F));
-
-  drawBg();
-
-}
-
-
 static
-void onScreenAt(int x, int y) {
-}
+void sayPaused() {
+  uint16_t xx, yy;
+  screenOffset(tft.getRotation(),xx,yy);
 
-bool rotate;
-
-static
-void onButton(int x) {
-  switch(x) {
-    case 0: rotate = true;
+  if (start_millis == 0) {
+    tft.setTextSize(3);
+    tft.setTextColor(SCREEN_FG, SCREEN_BG);
+    tft.setCursor(xx + 70, yy + 160);
+    tft.print(F("Paused"));
+  } else {
+    tft.fillRect(xx + 40, yy + 140, 160, 60, SCREEN_BG);
   }
 }
-
 
 
 static inline
-void onDown(void) {
-  int sx = x / w;
-  int sy = y / w;
-  switch (tft.getRotation()) {
-    case 0:
-      if (sy < 3) onScreenAt(sx,sy);
-      else onButton(sx);
-      break;
-    case 1:
-      if (sx < 3) onScreenAt(sx,sy);
-      else onButton(2-sy);
-      break;
-    case 2:
-      if (sy > 0) onScreenAt(sx,sy - 1);
-      else onButton(2-sx);
-      break;
-    case 3:
-      if (sx > 0) onScreenAt(sx - 1, sy);
-      else onButton(sy);
-      break;
+void drawBg(void) {
+  const uint16_t w = 160, h = 40;
+  const uint16_t x = 40, y = 0;
+
+  tft.setRotation(0);
+  tft.fillRect(40,40,160,160,SCREEN_BG);
+
+  for (int i = 0; i < 4; ++i) {
+    uint16_t xx, yy;
+    tft.setRotation(i);
+    screenOffset(i,xx,yy);
+    tft.fillRect(xx + x,yy + y,w,h,msgBG[i]);
   }
+
+}
+
+
+static inline
+void activate(uint8_t r) {
+  uint16_t xx;
+  uint16_t yy;
+
+  // Say the total time for the current player
+  uint8_t rold = tft.getRotation();
+  screenOffset(rold, xx, yy);
+  sayTime(SMALL);
+
+  // Clear the screen.  We flip to the other side, so that the slow
+  // drawing gives us a nice "roll up" effect.
+  rold = (rold + 2) % 4;
+  tft.setRotation(rold);
+  screenOffset(rold, xx,yy);
+  tft.fillRect(xx + 40, yy + 40, 160, 160, SCREEN_BG);
+
+  // Now switch to the new side.
+  tft.setRotation(r);
+  screenOffset(r, xx, yy);
+  tft.fillRect(xx + 40, yy, 160, 140, msgBG[r]);
+  sayTime(BIG);
+  if (start_millis != 0) start_millis = millis();
+  sayPaused();
+}
+
+
+/* ------------------------------------------------ */
+/* Event handling */
+
+
+static inline
+void onScreen(void) {
+  if (start_millis == 0) {
+    start_millis = millis();
+  } else {
+    uint8_t p = tft.getRotation();
+    ptime[p] += millis() - start_millis;
+    start_millis = 0;
+  }
+  sayPaused();
+}
+
+static inline
+void onButtonDown(int x) {
+  drawButton(x,FILLED);
+  btn_down = x;
+}
+
+static inline
+void onDown(uint16_t x, uint16_t y) {
+  if (y < 240) onScreen();
+  else onButtonDown(x / 80);
 }
 
 static inline
 void onUp(void) {
-  if (rotate) {
-    clearMsg();
-    tft.setRotation((tft.getRotation() + 1) % 4);
-    drawBg();
-    sayTime(time);
-    rotate = false;
+  switch (btn_down) {
+    case 0:
+    case 1:
+    case 2:
+      drawButton(btn_down,UNFILLED);
+      btn_down = NO_BTN;
+      activate ((tft.getRotation() + 1) % 4);
   }
 }
 
 
+void setup() {
+  tft.begin();
+  ts.begin();
+  tft.fillScreen(SCREEN_BG);
+  drawBg();
+  for (int i = 0; i < 3; ++i) drawButton(i,UNFILLED);
+
+}
+
 
 void loop(void) {
   static bool done;
-  Time t = Time(millis());
-  if (t != time) {
-    sayTime(Time(millis()));
-    time = t;
+  uint16_t x, y;
+
+  if (start_millis != 0) {
+    uint8_t p = tft.getRotation();
+    unsigned long new_start = millis();
+    ptime[p] += (new_start - start_millis);
+    start_millis = new_start;
+    sayTime(BIG);
   }
 
   if (ts.touched()) {
     if (ts.bufferEmpty()) return;
-    getPixelPoint();
+    getPixelPoint(x,y);
     if (done) return;
-    onDown();
+    onDown(x,y);
     done = true;
   } else {
+    while (!ts.bufferEmpty()) getPixelPoint(x,y);
     if (done) onUp();
     done = false;
   }

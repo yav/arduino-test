@@ -30,6 +30,11 @@ struct Time {
     return !(*this == y);
   }
 
+  unsigned long millis(void) {
+    return 1000 * (seconds + minutes * 60 + hours * 60 * 60);
+  }
+
+
   // Buffer needs 9 bytes of space. Only for less than 100 hours.
   void render(char *buf) {
     const unsigned size = 2 + 1 + 2 + 1 + 2 + 1;  // HH:MM:SS\0
