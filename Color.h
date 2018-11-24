@@ -2,30 +2,15 @@
 #define __COLOR_H_
 
 
-static inline
-uint16_t COL565(int r, int g, int b) {
-  return ((r&0x1F) << 11) | ((g&0x3F) << 5) | (b&0x1F);
-}
+#define COL565(r,g,b) \
+  ((((uint16_t)(r)&0x1F) << 11) | (((uint16_t)(g)&0x3F) << 5) | ((uint16_t)(b)&0x1F))
 
-static inline
-uint16_t COL888(int r, int g, int b) {
-  return COL565(r >> 3, g >> 2, b >> 3);
-}
+#define COL888(r,g,b) (COL565(r >> 3, g >> 2, b >> 3))
 
-static inline
-int d4(int x) {
-  int y = x & 0xF;
-  return (y << 4) | y;
-}
+#define d4(x) ((((x)&0xF) << 4) | ((x)&0xF))
 
-static inline
-uint16_t COL444(int r, int g, int b) {
-  return COL888(d4(r), d4(g), d4(b));
-}
+#define COL444(r,g,b) (COL888(d4(r),d4(g),d4(b)))
 
-static inline
-uint16_t COL444(int rgb) {
-  return COL444(rgb>>8,rgb>>4,rgb);
-}
+#define COL(rgb) (COL444(rgb>>8,rgb>>4,rgb))
 
 #endif
