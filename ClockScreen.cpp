@@ -40,6 +40,7 @@ class ClockScreen
       tft.setRotation(i);
       screenOffset(i,xx,yy);
       tft.fillRect(xx + x,yy + y,w,h,msgBG[i]);
+      sayTime(i,SMALL);
     }
 
     drawMenu();
@@ -90,12 +91,13 @@ class ClockScreen
     }
 
 
+  void sayTime(bool big) { sayTime(orient,big); }
 
-  void sayTime(bool big) {
+  void sayTime(uint8_t r, bool big) {
     uint16_t xx, yy;
     char msg[9];
-    tft.setRotation(orient);
-    screenOffset(orient,xx,yy);
+    tft.setRotation(r);
+    screenOffset(r,xx,yy);
     if (big) {
       tft.setTextSize(5);
       tft.setCursor(xx + 45, yy + 100);
@@ -103,8 +105,8 @@ class ClockScreen
       tft.setTextSize(3);
       tft.setCursor(xx + 80, yy + 10);
     }
-    tft.setTextColor(msgFG[orient], msgBG[orient]);
-    Time(ptime[orient]).render(msg);
+    tft.setTextColor(msgFG[r], msgBG[r]);
+    Time(ptime[r]).render(msg);
     tft.print(msg + 3);
   }
 
