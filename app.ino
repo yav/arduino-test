@@ -8,10 +8,13 @@
 #include <Adafruit_Sensor.h>
 #include <avr/pgmspace.h>
 
+#include "Globals.h"
 #include "Color.h"
 #include "Screen.h"
 
-#include "ClockScreen.cpp" // XXX
+// XXX
+#include "ClockScreen.cpp"
+#include "ColScreen.cpp"
 
 #define STMPE_CS 8
 #define TFT_DC   9
@@ -30,13 +33,22 @@ Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
 Adafruit_STMPE610 ts = Adafruit_STMPE610(STMPE_CS);
 
 // Player colors
-uint16_t  msgFG[] = { 0, 0, 0, 0 };
-uint16_t  msgBG[] = { COL(0xFFF), COL(0x0FF)
-                    , COL(0xF00), COL(0x0F0) };
+uint16_t  msgFG[] = { SCREEN_BG, SCREEN_BG, SCREEN_BG, SCREEN_BG };
+uint16_t  msgBG[] = { SCREEN_BG, SCREEN_BG, SCREEN_BG, SCREEN_BG };
 
 
 ClockScreen clockScreen;
+ColScreen colScreen;
 Screen *screen;
+
+void switchScreen(Screens x) {
+  switch (x) {
+    case ScrClock: screen = &clockScreen; break;
+    case ScrColor: screen = &colScreen; break;
+  }
+  tft.fillScreen(SCREEN_BG);
+  screen->setup();
+}
 
 
 // Get the location where we touched.
@@ -48,11 +60,15 @@ void getPixelPoint(uint16_t &x, uint16_t &y) {
   y = map(y, 180, 3800, 0, 325);
 }
 
+
+
+
 void setup() {
   tft.begin();
   ts.begin();
   tft.fillScreen(COL(0x000));
-  screen = &clockScreen;
+  // screen = &clockScreen;
+  screen = &colScreen;
   screen->setup();
   screen->rotated(0);
 
