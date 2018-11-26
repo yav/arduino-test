@@ -33,19 +33,29 @@ namespace ColScreenNS {
   const char col_btn3[] PROGMEM = "Clock";
   char const* const col_btns[] PROGMEM = { col_btn1, col_btn2, col_btn3 };
 
-  void drawColButton(uint8_t i, bool on) {
+  void tri(uint8_t i, uint8_t dir, int16_t x, int16_t y) {
+    uint16_t c = getFgCol(i);
+    switch (dir) {
+      case 0: tft.fillTriangle(x-5,y+5,x,y-10,x+5,y+5,c); break;
+      case 1: tft.fillTriangle(x-5,y-5,x+10,y,x-5,y+5,c); break;
+      case 2: tft.fillTriangle(x-5,y-5,x,y+10,x+5,y-5,c); break;
+      case 3: tft.fillTriangle(x+5,y+5,x-10,y,x+5,y-5,c); break;
+    }
+  }
+
+  void drawColButton(uint8_t i, uint8_t owner) {
     uint16_t x = 80 * (i % 3), y = 80 * (i / 3);
     uint16_t bg_col = getBgCol(i);
-    // uint16_t fg_col = getFgCol(i);
 
     tft.setRotation(0);
     tft.fillRect(x, y, 80, 80, SCREEN_BG);
     tft.fillRoundRect(10 + x, 5 + 5 + y, 60, 60, 5, bg_col);
-    tft.setCursor(25 + x, 35 + y);
-    if (on) {
+    if (owner != NO_OWNER) {
       tft.drawRoundRect(5 + x, 5 + y, 70, 70, 5, COL_SELECTED);
+      tri(i, owner, 35 + x, 40 + y);
     }
   }
+
 }
 
 
@@ -58,7 +68,7 @@ ColScreen::ColScreen() : Menu(), next_p(0) {
 void ColScreen::setup() {
   tft.setRotation(0);
   for (uint8_t i = 0; i < 9; ++i)
-    ColScreenNS::drawColButton(i, (owner[i] == NO_OWNER) ? BTN_INACTIVE : BTN_ACTIVE);
+    ColScreenNS::drawColButton(i, owner[i]);
     drawMenu();
 }
 
@@ -93,7 +103,7 @@ void ColScreen::rotated(uint8_t d) {
   drawMenu();
 }
 
-char const* const* ColScreen::menuLabels() {
+MenuLabels ColScreen::menuLabels() {
   return ColScreenNS::col_btns;
 }
 
@@ -115,7 +125,7 @@ void ColScreen::nextSlot() {
 
 void ColScreen::fillSlot(uint8_t col) {
   if (next_p > 3) return;
-  ColScreenNS::drawColButton(col, BTN_ACTIVE);
+  ColScreenNS::drawColButton(col, next_p);
   owner[col] = next_p;
   msgBG[next_p] = ColScreenNS::getBgCol(col);
   msgFG[next_p] = ColScreenNS::getFgCol(col);
@@ -127,7 +137,7 @@ void ColScreen::freeSlot(uint8_t col) {
   uint8_t i = owner[col];
   if (i == NO_OWNER) return;
 
-  ColScreenNS::drawColButton(col, BTN_INACTIVE);
+  ColScreenNS::drawColButton(col, NO_OWNER);
   msgBG[i]    = msgFG[i] = SCREEN_BG;
   slots[i]    = NOT_SELECTED;
   owner[col]  = NO_OWNER;

@@ -18,7 +18,7 @@ public:
   void rotated(uint8_t d)             override;
 
 private:
-  char const* const* menuLabels()     override;
+  MenuLabels menuLabels()             override;
   void menuAction(uint8_t i)          override;
 
   void nextSlot();

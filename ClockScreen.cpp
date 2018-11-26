@@ -71,7 +71,7 @@ void ClockScreen::onUp() {
   onMenuUp();
 }
 
-char const* const* ClockScreen::menuLabels() {
+MenuLabels ClockScreen::menuLabels() {
   return ClockScreenNS::clk_btns;
 }
 
