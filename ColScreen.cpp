@@ -82,24 +82,16 @@ public:
     y /= 80;
     int i = 3 * y + x;
     if (owner[i] == NO_OWNER) {
-      if (next_p > 3) return;
-          drawColButton(i, BTN_ACTIVE);
-          owner[i] = next_p;
-          msgBG[next_p] = getBgCol(i);
-          msgFG[next_p] = getFgCol(i);
-          slots[next_p] = i;
+      fillSlot(i);
 
-          for (next_p = 0; next_p < 4; ++next_p) {
-            if (slots[next_p] == NOT_SELECTED) return;
-          }
-          next_p = NO_OWNER;
+      for (i = 0; i < 4; ++i) {
+        nextSlot();
+        if (slots[next_p] == NOT_SELECTED) return;
+      }
+      next_p = NO_OWNER;
+
     } else {
-      drawColButton(i, BTN_INACTIVE);
-      next_p = owner[i];
-      msgBG[next_p] = SCREEN_BG;
-      msgFG[next_p] = SCREEN_BG;
-      slots[next_p] = NOT_SELECTED;
-      owner[i] = NO_OWNER;
+      freeSlot(i);
     }
   }
 
@@ -109,4 +101,33 @@ public:
     switchScreen(ScrClock);
   }
 
+private:
+  void nextSlot(void) {
+    switch(next_p) {
+      case 0: next_p = 2; return;
+      case 1: next_p = 3; return;
+      case 2: next_p = 1; return;
+      case 3: next_p = 0; return;
+    }
+  }
+
+  void fillSlot(uint8_t col) {
+    if (next_p > 3) return;
+    drawColButton(col, BTN_ACTIVE);
+    owner[col] = next_p;
+    msgBG[next_p] = getBgCol(col);
+    msgFG[next_p] = getFgCol(col);
+    slots[next_p] = col;
+  }
+
+  void freeSlot(uint8_t col) {
+    if (col > 9) return;
+    uint8_t i = owner[col];
+    if (i == NO_OWNER) return;
+    drawColButton(col, BTN_INACTIVE);
+    msgBG[i] = msgFG[i] = SCREEN_BG;
+    slots[i] = NOT_SELECTED;
+    owner[col] = NO_OWNER;
+    next_p = i;
+  }
 };
