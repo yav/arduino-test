@@ -21,7 +21,8 @@ public:
 private:
   MenuLabels menuLabels()             override;
   void menuAction(uint8_t i)          override;
-  void pause ();
+  void pause (bool on);
+  void togglePause ();
   void sayTime(bool big);
   void sayTime(uint8_t r, bool big);
   void sayPaused();

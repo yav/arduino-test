@@ -64,7 +64,7 @@ void ClockScreen::rotated(uint8_t d) {
 
 void ClockScreen::onDown(uint16_t x, uint16_t y) {
   if (onMenuDown(x,y)) return;
-  pause();
+  togglePause();
 }
 
 void ClockScreen::onUp() {
@@ -83,21 +83,29 @@ void ClockScreen::menuAction(uint8_t i) {
       break;
 
     case 2:
-      pause();
+      pause(true);
       switchScreen(ScrColor);
       break;
   }
 }
 
-void ClockScreen::pause () {
-  if (start_millis == PAUSED) {
-    start_millis = millis();
-  } else {
+void ClockScreen::pause (bool on) {
+  if (on) {
+    if (start_millis == PAUSED) return;
     ptime[orient] += millis() - start_millis;
-    start_millis = 0;
+    start_millis = PAUSED;
+  } else {
+    if (start_millis != PAUSED) return;
+    start_millis = millis();
   }
   sayPaused();
 }
+
+void ClockScreen::togglePause() {
+  pause(start_millis != PAUSED);
+}
+
+
 
 
 void ClockScreen::sayTime(bool big) {
@@ -153,15 +161,15 @@ void ClockScreen::activate(uint8_t r) {
     tft.setRotation(rold);
     Menu::screenOffset(rold, xx,yy);
     tft.fillRect(xx + 40, yy + 40, 160, 160, SCREEN_BG);
+    orient = r;
   }
 
   // Now switch to the new side.
-  orient = r;
   tft.setRotation(r);
   Menu::screenOffset(r, xx, yy);
   tft.fillRect(xx + 40, yy, 160, 140, msgBG[r]);
   sayTime(BIG);
-  if (start_millis != 0) start_millis = millis();
+  if (start_millis != PAUSED) start_millis = millis();
   sayPaused();
 }
 
