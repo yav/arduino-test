@@ -12,9 +12,8 @@
 #include "Color.h"
 #include "Screen.h"
 
-// XXX
-#include "ClockScreen.cpp"
-#include "ColScreen.cpp"
+#include "ColScreen.h"
+#include "ClockScreen.h"
 
 #define STMPE_CS 8
 #define TFT_DC   9
@@ -66,7 +65,7 @@ void getPixelPoint(uint16_t &x, uint16_t &y) {
 void setup() {
   tft.begin();
   ts.begin();
-  tft.fillScreen(COL(0x000));
+  tft.fillScreen(COL(SCREEN_BG));
   // screen = &clockScreen;
   screen = &colScreen;
   screen->setup();

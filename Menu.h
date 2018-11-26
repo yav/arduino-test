@@ -10,23 +10,17 @@
 #define BTN_ACTIVE   true
 #define NO_BTN       4
 
-// Compute offsets to skip over the button bar,
-// depending on screen orientation.
-inline
-void screenOffset (uint8_t r, uint16_t &x, uint16_t &y) {
-  x = (r == 3) ? 80 : 0;
-  y = (r == 2) ? 80 : 0;
-}
+typedef char const* const* MenuLabels;
 
 class Menu {
   uint8_t btn_down;
   uint8_t orient;
 
-public:
+
+protected:
   Menu(void)
     : btn_down(NO_BTN), orient(0) {}
 
-protected:
   void setOrient(uint8_t i) { orient = i % 4; }
   uint8_t getOrient(void) { return orient; }
 
@@ -50,8 +44,21 @@ protected:
     menuAction(b);
   }
 
-  virtual void menuAction(uint8_t btn) = 0;
-  virtual const char* const* menuLabels(void) = 0; // pointer in program space
+  virtual void menuAction(uint8_t btn) {
+  }
+
+  virtual MenuLabels menuLabels(void) {
+    return NULL;
+  }
+
+  // Compute offsets to skip over the button bar,
+  // depending on screen orientation.
+  static inline
+  void screenOffset (uint8_t r, uint16_t &x, uint16_t &y) {
+    x = (r == 3) ? 80 : 0;
+    y = (r == 2) ? 80 : 0;
+  }
+
 
 private:
   void btnLoc(uint8_t i, uint16_t &x, uint16_t &y) {
@@ -77,8 +84,11 @@ private:
       tft.fillRoundRect(x + 5, y + 5, 70, 70, 5, BTN_BG);
     }
 
+    MenuLabels labs = menuLabels();
+    if (!labs) return;
+
     char buf[20];
-    strncpy_P(buf, (const char*)pgm_read_word(menuLabels() + i), 20);
+    strncpy_P(buf, (char const*)pgm_read_word(labs + i), 20);
     buf[19] = 0;
 
     int16_t bx,by;
@@ -87,9 +97,6 @@ private:
     tft.setCursor(x + 40 - (bw/2), 35 + y);
     tft.print(buf);
   }
-
-
-
 };
 
 #endif

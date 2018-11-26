@@ -8,7 +8,6 @@
 #define SCREEN_BG COL(0x000)
 #define SCREEN_FG COL(0xFF0)
 
-
 extern Adafruit_ILI9341 tft;
 extern uint16_t msgFG[4];
 extern uint16_t msgBG[4];
