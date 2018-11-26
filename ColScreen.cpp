@@ -28,7 +28,10 @@ uint16_t getFgCol(uint8_t i) {
   return pgm_read_word(colors_fg + i);
 }
 
-
+const char col_btn1[] PROGMEM = "Roate";
+const char col_btn2[] PROGMEM = "";
+const char col_btn3[] PROGMEM = "Clocl";
+const char* const col_btns[] PROGMEM = { col_btn1, col_btn2, col_btn3 };
 
 
 
@@ -38,14 +41,15 @@ void drawColButton(int i, bool on) {
   uint16_t bg_col = getBgCol(i);
   uint16_t fg_col = getFgCol(i);
 
+  tft.setRotation(0);
   tft.fillRect(x, y, 80, 80, SCREEN_BG);
-  tft.fillRoundRect(5 + x, 5 + 5 + y, 60, 60, 5, bg_col);
-  tft.setCursor(20 + x, 35 + y);
+  tft.fillRoundRect(10 + x, 5 + 5 + y, 60, 60, 5, bg_col);
+  tft.setCursor(25 + x, 35 + y);
   tft.setTextSize(1);
   tft.setTextColor(fg_col,bg_col);
   tft.print(F("00:00"));
   if (on) {
-    tft.drawRoundRect(x, 5 + y, 70, 70, 5, COL_SELECTED);
+    tft.drawRoundRect(5 + x, 5 + y, 70, 70, 5, COL_SELECTED);
   }
 
 }
@@ -97,11 +101,20 @@ public:
 
   void onUp(void) { onMenuUp(); }
 
-  void menuAction(uint8_t i) {
-    switchScreen(ScrClock);
-  }
+
+  void rotated(uint8_t d) { setOrient(d); drawMenu(); }
 
 private:
+
+  const char * const* menuLabels(void) { return col_btns; }
+
+  void menuAction(uint8_t i) {
+    switch(i) {
+      case 0: rotated((getOrient() + 1) % 4); break;
+      case 2: switchScreen(ScrClock); break;
+    }
+  }
+
   void nextSlot(void) {
     switch(next_p) {
       case 0: next_p = 2; return;

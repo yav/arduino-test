@@ -20,11 +20,16 @@ void screenOffset (uint8_t r, uint16_t &x, uint16_t &y) {
 
 class Menu {
   uint8_t btn_down;
+  uint8_t orient;
 
 public:
-  Menu(void) : btn_down(NO_BTN) {}
+  Menu(void)
+    : btn_down(NO_BTN), orient(0) {}
 
 protected:
+  void setOrient(uint8_t i) { orient = i % 4; }
+  uint8_t getOrient(void) { return orient; }
+
   void drawMenu(void) {
     for (int i = 0; i < 3; ++i) drawButton(i,BTN_INACTIVE);
   }
@@ -38,23 +43,49 @@ protected:
   }
 
   void onMenuUp(void) {
+    uint16_t b = btn_down;
     if (btn_down == NO_BTN) return;
-    menuAction(btn_down);
     drawButton(btn_down,BTN_INACTIVE);
     btn_down = NO_BTN;
+    menuAction(b);
   }
 
   virtual void menuAction(uint8_t btn) = 0;
+  virtual const char* const* menuLabels(void) = 0; // pointer in program space
 
 private:
-  static
-  void drawButton(int x, bool on) {
-    tft.setRotation(0);
-    if (on) {
-      tft.fillRoundRect(80 * x, 245, 70, 70, 5, BTN_ON_BG);
-    } else {
-      tft.fillRoundRect(80 * x, 245, 70, 70, 5, BTN_BG);
+  void btnLoc(uint8_t i, uint16_t &x, uint16_t &y) {
+    switch(orient) {
+      case 0: x = 80 * i; y = 240; break;
+      case 1: x = 240; y = 240 - 80 * (i + 1); break;
+      case 2: x = 240 - 80 * (i + 1); y = 0; break;
+      case 3: x = 0; y = 80 * i;
     }
+  }
+
+  void drawButton(int i, bool on) {
+    uint16_t x, y;
+    btnLoc(i, x, y);
+
+    tft.setRotation(orient);
+    tft.setTextSize(1);
+    if (on) {
+      tft.setTextColor(BTN_ON_FG, BTN_ON_BG);
+      tft.fillRoundRect(x + 5, y + 5, 70, 70, 5, BTN_ON_BG);
+    } else {
+      tft.setTextColor(BTN_FG, BTN_BG);
+      tft.fillRoundRect(x + 5, y + 5, 70, 70, 5, BTN_BG);
+    }
+
+    char buf[20];
+    strncpy_P(buf, (const char*)pgm_read_word(menuLabels() + i), 20);
+    buf[19] = 0;
+
+    int16_t bx,by;
+    uint16_t bw,bh;
+    tft.getTextBounds(buf,x,y,&bx,&by,&bw,&bh);
+    tft.setCursor(x + 40 - (bw/2), 35 + y);
+    tft.print(buf);
   }
 
 

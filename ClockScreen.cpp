@@ -10,6 +10,10 @@
 #define SMALL    false
 #define PAUSED   0
 
+const char clk_btn1[] PROGMEM = "Rotate";
+const char clk_btn2[] PROGMEM = "(none)";
+const char clk_btn3[] PROGMEM = "Color";
+const char* const clk_btns[] PROGMEM = { clk_btn1, clk_btn2, clk_btn3 };
 
 class ClockScreen
   : public Screen, public Menu
@@ -58,6 +62,8 @@ class ClockScreen
   }
 
   void rotated(uint8_t d) {
+    setOrient(d);
+    drawMenu();
     activate(d);
   }
 
@@ -69,9 +75,12 @@ class ClockScreen
 
   void onUp(void) { onMenuUp(); }
 
+  private:
+  const char * const* menuLabels(void) { return clk_btns; }
+
   void menuAction(uint8_t i) {
     switch (i) {
-      case 0: activate((orient + 1) % 4); break;
+      case 0: rotated((orient + 1) % 4); break;
       case 2:
         pause();
         switchScreen(ScrColor);
@@ -79,7 +88,6 @@ class ClockScreen
     }
   }
 
-  private:
     void pause (void) {
       if (start_millis == PAUSED) {
         start_millis = millis();
