@@ -30,7 +30,7 @@ uint16_t getFgCol(uint8_t i) {
 
 const char col_btn1[] PROGMEM = "Roate";
 const char col_btn2[] PROGMEM = "";
-const char col_btn3[] PROGMEM = "Clocl";
+const char col_btn3[] PROGMEM = "Clock";
 const char* const col_btns[] PROGMEM = { col_btn1, col_btn2, col_btn3 };
 
 
@@ -45,9 +45,6 @@ void drawColButton(int i, bool on) {
   tft.fillRect(x, y, 80, 80, SCREEN_BG);
   tft.fillRoundRect(10 + x, 5 + 5 + y, 60, 60, 5, bg_col);
   tft.setCursor(25 + x, 35 + y);
-  tft.setTextSize(1);
-  tft.setTextColor(fg_col,bg_col);
-  tft.print(F("00:00"));
   if (on) {
     tft.drawRoundRect(5 + x, 5 + y, 70, 70, 5, COL_SELECTED);
   }

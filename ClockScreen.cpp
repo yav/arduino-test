@@ -11,7 +11,7 @@
 #define PAUSED   0
 
 const char clk_btn1[] PROGMEM = "Rotate";
-const char clk_btn2[] PROGMEM = "(none)";
+const char clk_btn2[] PROGMEM = "";
 const char clk_btn3[] PROGMEM = "Color";
 const char* const clk_btns[] PROGMEM = { clk_btn1, clk_btn2, clk_btn3 };
 
