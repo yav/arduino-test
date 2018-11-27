@@ -4,20 +4,22 @@
 #include "ColScreen.h"
 
 #define COL_SELECTED COL(0xFFF)
-#define NOT_SELECTED 10
+#define NOT_SELECTED 1
 #define NO_OWNER 4
 
 namespace ColScreenNS {
-  const uint_fast16_t colors[9] PROGMEM =
+  const uint_fast16_t colors[] PROGMEM =
     { COL(0xF00), COL(0x090), COL(0x00F)
     , COL(0xFF0), COL(0x606), COL(0xF60)
     , COL(0x111), COL(0x999), COL(0xFFF)
+    , COL(0xF6C)
     };
 
-  const uint_fast16_t colors_fg[9] PROGMEM =
+  const uint_fast16_t colors_fg[] PROGMEM =
     { COL(0xFFF), COL(0xFFF), COL(0xFFF)
     , COL(0x000), COL(0xFFF), COL(0x000)
     , COL(0xCCC), COL(0x000), COL(0x333)
+    , COL(0x333)
     };
 
   uint16_t getBgCol(uint8_t i) {
@@ -60,14 +62,14 @@ namespace ColScreenNS {
 
 
 ColScreen::ColScreen() : Menu(), next_p(0) {
-  for (uint8_t i = 0; i < 9; ++i) owner[i] = NO_OWNER;
+  for (uint8_t i = 0; i < 10; ++i) owner[i] = NO_OWNER;
   for (uint8_t i = 0; i < 4; ++i) slots[i] = NOT_SELECTED;
 }
 
 
 void ColScreen::setup() {
   tft.setRotation(0);
-  for (uint8_t i = 0; i < 9; ++i)
+  for (uint8_t i = 0; i < 10; ++i)
     ColScreenNS::drawColButton(i, owner[i]);
     drawMenu();
 }
@@ -112,6 +114,10 @@ void ColScreen::menuAction(uint8_t i) {
   }
 }
 
+bool ColScreen::buttonUsed(uint8_t btn) {
+  return btn > 0;
+}
+
 void ColScreen::nextSlot() {
   switch(next_p) {
     case 0: next_p = 2; return;
@@ -131,7 +137,7 @@ void ColScreen::fillSlot(uint8_t col) {
 }
 
 void ColScreen::freeSlot(uint8_t col) {
-  if (col > 9) return;
+  if (col >= 10) return;
   uint8_t i = owner[col];
   if (i == NO_OWNER) return;
 

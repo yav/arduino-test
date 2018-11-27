@@ -26,6 +26,7 @@ protected:
   bool onMenuDown(uint16_t x, uint16_t y) {
     if (y < 240) return false;
     x /= 80;
+    if (!buttonUsed(x)) return false;
     drawButton(x,BTN_ACTIVE);
     btn_down = x;
     return true;
@@ -40,6 +41,10 @@ protected:
   }
 
   virtual void menuAction(uint8_t btn) {
+  }
+
+  virtual bool buttonUsed(uint8_t btn) {
+    return true;
   }
 
   virtual MenuLabels menuLabels(void) {
@@ -58,6 +63,8 @@ protected:
 private:
 
   void drawButton(int i, bool on) {
+    if (!buttonUsed(i)) return;
+
     const uint16_t x = 80 * i, y = 240;
 
     tft.setRotation(0);

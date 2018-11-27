@@ -6,7 +6,7 @@
 
 class ColScreen : public Screen, private Menu {
 
-  uint8_t owner[9]; // who owns a color
+  uint8_t owner[10]; // who owns a color
   uint8_t slots[4]; // what is selected for each slot
   int next_p;       // which slot to fill next
 
@@ -20,6 +20,7 @@ public:
 private:
   MenuLabels menuLabels()             override;
   void menuAction(uint8_t i)          override;
+  bool buttonUsed(uint8_t i)          override;
 
   void nextSlot();
   void fillSlot(uint8_t col);
