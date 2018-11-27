@@ -56,7 +56,6 @@ void ClockScreen::update() {
 }
 
 void ClockScreen::rotated(uint8_t d) {
-  setOrient(d);
   drawMenu();
   activate(d);
 }

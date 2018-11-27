@@ -28,7 +28,7 @@ namespace ColScreenNS {
     return pgm_read_word(colors_fg + i);
   }
 
-  const char col_btn1[] PROGMEM = "Roate";
+  const char col_btn1[] PROGMEM = "";
   const char col_btn2[] PROGMEM = "";
   const char col_btn3[] PROGMEM = "Clock";
   char const* const col_btns[] PROGMEM = { col_btn1, col_btn2, col_btn3 };
@@ -52,7 +52,7 @@ namespace ColScreenNS {
     tft.fillRoundRect(10 + x, 5 + 5 + y, 60, 60, 5, bg_col);
     if (owner != NO_OWNER) {
       tft.drawRoundRect(5 + x, 5 + y, 70, 70, 5, COL_SELECTED);
-      tri(i, owner, 35 + x, 40 + y);
+      tri(i, owner, 40 + x, 40 + y);
     }
   }
 
@@ -99,7 +99,6 @@ void ColScreen::onUp() {
 
 
 void ColScreen::rotated(uint8_t d) {
-  setOrient(d);
   drawMenu();
 }
 
@@ -109,7 +108,6 @@ MenuLabels ColScreen::menuLabels() {
 
 void ColScreen::menuAction(uint8_t i) {
   switch(i) {
-    case 0: rotated((getOrient() + 1) % 4); break;
     case 2: switchScreen(ScrClock); break;
   }
 }

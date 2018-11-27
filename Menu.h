@@ -14,15 +14,10 @@ typedef char const* const* MenuLabels;
 
 class Menu {
   uint8_t btn_down;
-  uint8_t orient;
-
 
 protected:
   Menu(void)
-    : btn_down(NO_BTN), orient(0) {}
-
-  void setOrient(uint8_t i) { orient = i % 4; }
-  uint8_t getOrient(void) { return orient; }
+    : btn_down(NO_BTN) {}
 
   void drawMenu(void) {
     for (int i = 0; i < 3; ++i) drawButton(i,BTN_INACTIVE);
@@ -61,20 +56,11 @@ protected:
 
 
 private:
-  void btnLoc(uint8_t i, uint16_t &x, uint16_t &y) {
-    switch(orient) {
-      case 0: x = 80 * i; y = 240; break;
-      case 1: x = 240; y = 240 - 80 * (i + 1); break;
-      case 2: x = 240 - 80 * (i + 1); y = 0; break;
-      case 3: x = 0; y = 80 * i;
-    }
-  }
 
   void drawButton(int i, bool on) {
-    uint16_t x, y;
-    btnLoc(i, x, y);
+    const uint16_t x = 80 * i, y = 240;
 
-    tft.setRotation(orient);
+    tft.setRotation(0);
     tft.setTextSize(1);
     if (on) {
       tft.setTextColor(BTN_ON_FG, BTN_ON_BG);
