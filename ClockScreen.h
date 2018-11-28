@@ -12,7 +12,7 @@ class ClockScreen : public Screen, private Menu {
 
 public:
   ClockScreen();
-  void setup()                        override;
+  void setup(uint8_t d)               override;
   void update()                       override;
   void rotated(uint8_t d)             override;
   void onDown(uint16_t x, uint16_t y) override;

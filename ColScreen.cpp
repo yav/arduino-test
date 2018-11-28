@@ -18,8 +18,8 @@ namespace ColScreenNS {
   const uint_fast16_t colors_fg[] PROGMEM =
     { COL(0xFFF), COL(0xFFF), COL(0xFFF)
     , COL(0x000), COL(0xFFF), COL(0x000)
-    , COL(0xCCC), COL(0x000), COL(0x333)
-    , COL(0x333)
+    , COL(0xFFF), COL(0x000), COL(0x000)
+    , COL(0x000)
     };
 
   uint16_t getBgCol(uint8_t i) {
@@ -67,7 +67,7 @@ ColScreen::ColScreen() : Menu(), next_p(0) {
 }
 
 
-void ColScreen::setup() {
+void ColScreen::setup(uint8_t d) {
   tft.setRotation(0);
   for (uint8_t i = 0; i < 10; ++i)
     ColScreenNS::drawColButton(i, owner[i]);

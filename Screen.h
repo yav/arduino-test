@@ -9,7 +9,7 @@ class Screen {
   public:
 
     // Called when we want to display the screen
-    virtual void setup(void) {}
+    virtual void setup(uint8_t dir) {}
 
     // Called in a loop to update the screen
     virtual void update(void) {}

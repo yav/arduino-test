@@ -27,7 +27,7 @@ ClockScreen::ClockScreen()
   : Menu(), start_millis(PAUSED), ptime { 0, 0, 0, 0 }, orient(0) {
 }
 
-void ClockScreen::setup() {
+void ClockScreen::setup(uint8_t dir) {
   const uint16_t w = 160, h = 40;
   const uint16_t x = 40, y = 0;
 
@@ -43,7 +43,7 @@ void ClockScreen::setup() {
   }
 
   drawMenu();
-  activate(orient);
+  activate(dir);
 }
 
 void ClockScreen::update() {
@@ -56,8 +56,11 @@ void ClockScreen::update() {
 }
 
 void ClockScreen::rotated(uint8_t d) {
-  drawMenu();
-  activate(d);
+  if (d == DIR_UNKNOWN) pause(true);
+  else {
+    drawMenu();
+    activate(d);
+  }
 }
 
 
