@@ -65,7 +65,7 @@ void getPixelPoint(uint16_t &x, uint16_t &y) {
 void setup() {
   tft.begin();
   ts.begin();
-  tft.fillScreen(COL(SCREEN_BG));
+  tft.fillScreen(SCREEN_BG);
   // screen = &clockScreen;
   screen = &colScreen;
   screen->setup();

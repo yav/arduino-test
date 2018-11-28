@@ -38,7 +38,7 @@ void ClockScreen::setup() {
     uint16_t xx, yy;
     tft.setRotation(i);
     Menu::screenOffset(i,xx,yy);
-    tft.fillRect(xx + x,yy + y,w,h,msgBG[i]);
+    gradRect(xx + x,yy + y,w,h,SCREEN_BG,msgBG[i]);
     sayTime(i,SMALL);
   }
 
@@ -166,7 +166,7 @@ void ClockScreen::activate(uint8_t r) {
   // Now switch to the new side.
   tft.setRotation(r);
   Menu::screenOffset(r, xx, yy);
-  tft.fillRect(xx + 40, yy, 160, 140, msgBG[r]);
+  gradRect(xx + 40, yy, 160, 140, SCREEN_BG, msgBG[r]);
   sayTime(BIG);
   if (start_millis != PAUSED) start_millis = millis();
   sayPaused();
