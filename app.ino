@@ -73,15 +73,13 @@ uint8_t orientation() {
   if (lis.y > 10000)  return dirActive(lis.x) ? DIR_UNKNOWN : 1;
   if (lis.y < -10000) return dirActive(lis.x) ? DIR_UNKNOWN : 3;
   if (lis.x < -10000) return dirActive(lis.y) ? DIR_UNKNOWN : 0;
-  if (lis.x <  10000) return dirActive(lis.y) ? DIR_UNKNOWN : 2;
+  if (lis.x >  10000) return dirActive(lis.y) ? DIR_UNKNOWN : 2;
   return DIR_UNKNOWN;
 }
 
 
 
 void setup() {
-  Serial.begin(9600);
-
   tft.begin();
   ts.begin();
   lis.begin();
