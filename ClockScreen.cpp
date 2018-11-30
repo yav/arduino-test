@@ -14,7 +14,7 @@
 
 namespace ClockScreenNS {
 
-  char const clk_btn1[] PROGMEM = "Rotate";
+  char const clk_btn1[] PROGMEM = "";
   char const clk_btn2[] PROGMEM = "";
   char const clk_btn3[] PROGMEM = "Color";
   char const* const clk_btns[] PROGMEM = { clk_btn1, clk_btn2, clk_btn3 };
@@ -24,8 +24,7 @@ namespace ClockScreenNS {
 
 
 ClockScreen::ClockScreen()
-  : Menu(), start_millis(PAUSED), ptime { 0, 0, 0, 0 }, orient(0) {
-}
+  : Menu(), start_millis(PAUSED), ptime { 0, 0, 0, 0 }, orient(0) {}
 
 void ClockScreen::setup(uint8_t dir) {
   const uint16_t w = 160, h = 40;
@@ -49,9 +48,12 @@ void ClockScreen::setup(uint8_t dir) {
 void ClockScreen::update() {
   if (start_millis != 0) {
     unsigned long new_start = millis();
-    ptime[orient] += (new_start - start_millis);
-    start_millis = new_start;
-    sayTime(BIG);
+    unsigned long elapsed = new_start - start_millis;
+    if (elapsed > 1000) {
+      ptime[orient] += elapsed;
+      start_millis = new_start;
+      sayTime(BIG);
+    }
   }
 }
 
@@ -71,6 +73,10 @@ void ClockScreen::onDown(uint16_t x, uint16_t y) {
 
 void ClockScreen::onUp() {
   onMenuUp();
+}
+
+bool ClockScreen::buttonUsed(uint8_t b) {
+  return b == 2;
 }
 
 MenuLabels ClockScreen::menuLabels() {
