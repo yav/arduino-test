@@ -8,7 +8,8 @@ ARDUINO_LIBS=Adafruit_GFX_Library \
              Adafruit_STMPE610 \
              Wire \
              Adafruit_Unified_Sensor \
-             Adafruit_LIS3DH
+             Adafruit_LIS3DH \
+             SD
 
 include $(ARDMK_DIR)/Arduino.mk
 
