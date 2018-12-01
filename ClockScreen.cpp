@@ -42,11 +42,15 @@ void ClockScreen::setup(uint8_t dir) {
   }
 
   drawMenu();
-  activate(dir);
+  if (dir == DIR_UNKNOWN) {
+    pause(true);
+    sayPaused();
+  }
+  else activate(dir);
 }
 
 void ClockScreen::update() {
-  if (start_millis != 0) {
+  if (start_millis != PAUSED) {
     unsigned long new_start = millis();
     unsigned long elapsed = new_start - start_millis;
     if (elapsed > 1000) {
@@ -67,8 +71,7 @@ void ClockScreen::rotated(uint8_t d) {
 
 
 void ClockScreen::onDown(uint16_t x, uint16_t y) {
-  if (onMenuDown(x,y)) return;
-  togglePause();
+  onMenuDown(x,y);
 }
 
 void ClockScreen::onUp() {
@@ -141,7 +144,7 @@ void ClockScreen::sayPaused() {
   uint16_t xx, yy;
   Menu::screenOffset(orient,xx,yy);
   tft.setRotation(orient);
-  if (start_millis == 0) {
+  if (start_millis == PAUSED) {
     tft.setTextSize(3);
     tft.setTextColor(SCREEN_FG, SCREEN_BG);
     tft.setCursor(xx + 70, yy + 160);
@@ -172,12 +175,17 @@ void ClockScreen::activate(uint8_t r) {
     orient = r;
   }
 
-  // Now switch to the new side.
-  tft.setRotation(r);
-  Menu::screenOffset(r, xx, yy);
-  gradRect(xx + 40, yy, 160, 140, SCREEN_BG, msgBG[r]);
-  sayTime(BIG);
-  if (start_millis != PAUSED) start_millis = millis();
+  if (r == DIR_UNKNOWN) {
+    pause(true);
+  } else {
+    // Now switch to the new side.
+    tft.setRotation(r);
+    Menu::screenOffset(r, xx, yy);
+    gradRect(xx + 40, yy, 160, 140, SCREEN_BG, msgBG[r]);
+    sayTime(BIG);
+    start_millis = millis();
+  }
+
   sayPaused();
 }
 

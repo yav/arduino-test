@@ -80,6 +80,8 @@ uint8_t orientation() {
 
 
 void setup() {
+  Serial.begin(9600);
+  Serial.println(F("HELLO!"));
   tft.begin();
   ts.begin();
   lis.begin();
